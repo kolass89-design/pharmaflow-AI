@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "Nova Download Manager",
+  "short_name": "Nova",
+  "version": "0.1.0",
+  "description": "Send downloads to Nova Download Manager and find direct media files on pages. Works only with the Nova desktop app on this computer.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Nova Download Manager",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "background": { "service_worker": "background.js", "type": "module" },
+  "options_page": "options.html",
+  "permissions": ["activeTab", "scripting", "contextMenus", "storage"],
+  "host_permissions": ["http://127.0.0.1/*"],
+  "optional_host_permissions": ["*://*/*"]
+}

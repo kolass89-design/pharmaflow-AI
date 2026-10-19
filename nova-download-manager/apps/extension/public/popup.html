@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<style>
+  body { width: 360px; margin: 0; font: 13px 'Segoe UI', system-ui, sans-serif; background: #0b1020; color: #e8ecf8; }
+  header { display: flex; align-items: center; gap: 9px; padding: 12px 14px; border-bottom: 1px solid #24305c; }
+  .logo { width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(135deg,#6d7cff,#22c3e6); display: grid; place-items: center; font-weight: 800; color: #fff; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: #62719c; margin-left: auto; }
+  .dot.on { background: #2fd08c; } .dot.off { background: #ff5d73; }
+  main { padding: 12px 14px; }
+  #status { color: #94a3c7; margin: 0 0 10px; line-height: 1.45; }
+  .btn { border: 1px solid #24305c; background: #141d3a; color: #e8ecf8; border-radius: 9px; padding: 7px 12px; font-weight: 600; cursor: pointer; }
+  .btn.primary { background: linear-gradient(135deg,#6d7cff,#22c3e6); border: 0; color: #fff; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .cand { display: flex; gap: 10px; align-items: center; background: #141d3a; border: 1px solid #24305c; border-radius: 11px; padding: 9px 10px; margin-bottom: 8px; }
+  .cand .ic { font-size: 19px; }
+  .cand .meta { flex: 1; min-width: 0; }
+  .cand .nm { font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cand .sub, .muted { color: #94a3c7; font-size: 12px; line-height: 1.45; }
+  #pagefile { display: none; background: #141d3a; border: 1px solid #24305c; border-radius: 11px; padding: 10px; margin-bottom: 12px; }
+  footer { padding: 10px 14px; border-top: 1px solid #24305c; color: #62719c; font-size: 11.5px; line-height: 1.5; }
+</style>
+</head>
+<body>
+  <header><div class="logo">N</div><b>Nova Download Manager</b><span id="dot" class="dot"></span></header>
+  <main>
+    <p id="status">Checking Nova…</p>
+    <div class="row">
+      <button class="btn primary" id="scan">🔍 Scan this page for media</button>
+      <button class="btn" id="sendpage">Send page URL</button>
+      <button class="btn" id="options">⚙️ Settings</button>
+    </div>
+    <div id="pagefile">
+      <div class="muted">This tab is a direct file:</div>
+      <div id="pagefile-name" style="font-weight:650;margin:4px 0 8px"></div>
+      <button class="btn primary" id="pagefile-btn">Download with Nova</button>
+    </div>
+    <div id="candidates"><p class="muted">Click “Scan this page” to look for direct video/audio files. With automatic detection enabled (extension settings), candidates also appear here automatically.</p></div>
+  </main>
+  <footer>Nova downloads <b>direct files only</b>. Streaming/DRM-protected media is never scraped or bypassed. Everything stays on this computer.</footer>
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

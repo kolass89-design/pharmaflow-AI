@@ -1,0 +1,29 @@
+# dependencies & build outputs (never commit binaries/caches)
+node_modules/
+dist/
+dist-electron/
+release/
+apps/desktop/release/
+apps/extension/dist/
+apps/extension/nova-extension.zip
+packages/core/dist/
+
+# android
+apps/android/.gradle/
+apps/android/app/build/
+apps/android/build/
+apps/android/local.properties
+*.apk
+*.aab
+
+# nova runtime/test leftovers
+*.novapart
+*.novapart.*
+*.nova-meta.json
+
+# misc
+.DS_Store
+*.log
+.env
+.env.*
+!.env.example

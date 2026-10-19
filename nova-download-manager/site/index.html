@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Nova Download Manager — fast, private downloads for Windows & Android</title>
+<meta name="description" content="Nova is a lightweight download manager with pause/resume, segmented downloads, browser media detection and a built-in player. No accounts, no telemetry." />
+<style>
+  :root { --bg:#0b1020; --panel:#141d3a; --border:#24305c; --text:#e8ecf8; --muted:#94a3c7; --grad:linear-gradient(135deg,#6d7cff,#22c3e6); }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif; background:radial-gradient(1200px 600px at 50% -100px,#1b2752,var(--bg)); color:var(--text); }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 56px 20px 72px; }
+  .logo { width:74px;height:74px;border-radius:20px;background:var(--grad);display:grid;place-items:center;font-size:38px;font-weight:800;color:#fff;box-shadow:0 18px 40px rgba(80,110,255,.45); margin-bottom:20px; }
+  h1 { font-size: clamp(34px,6vw,54px); line-height:1.05; margin:0 0 14px; letter-spacing:-.5px; }
+  .lead { font-size: clamp(16px,2.4vw,20px); color:var(--muted); line-height:1.6; max-width: 720px; }
+  .cta { display:flex; gap:12px; flex-wrap:wrap; margin: 30px 0 10px; }
+  .btn { text-decoration:none; font-weight:700; padding: 14px 22px; border-radius: 12px; border:1px solid var(--border); background:var(--panel); color:var(--text); }
+  .btn.primary { background:var(--grad); color:#fff; border:0; box-shadow:0 10px 26px rgba(80,110,255,.4); }
+  .note { color:var(--muted); font-size: 13px; }
+  .grid { display:grid; grid-template-columns: repeat(auto-fit,minmax(270px,1fr)); gap:14px; margin-top: 42px; }
+  .card { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:20px; }
+  .card h3 { margin:4px 0 8px; font-size:17px; }
+  .card p { color:var(--muted); line-height:1.6; margin:0; font-size:14.5px; }
+  .ic { font-size:26px; }
+  footer { margin-top: 54px; color:var(--muted); font-size:13px; line-height:1.7; border-top:1px solid var(--border); padding-top: 22px; }
+  a { color:#22c3e6; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo">⬇</div>
+  <h1>Nova Download Manager</h1>
+  <p class="lead">Fast, resumable downloads for Windows &amp; Android — with honest browser media detection and a built-in player. No accounts. No telemetry. No ads. Just your files, on your device.</p>
+
+  <div class="cta">
+    <a class="btn primary" href="https://github.com/kolass89-design/nova-download-manager/releases">⬇ Download for Windows</a>
+    <a class="btn" href="https://github.com/kolass89-design/nova-download-manager/releases">🤖 Android APK</a>
+    <a class="btn" href="https://github.com/kolass89-design/nova-download-manager/releases">🧩 Browser extension</a>
+  </div>
+  <p class="note">All builds are produced by GitHub Actions from this open-source code. Windows installer is unsigned (SmartScreen may warn); Android CI builds are debug-signed unless a release key is configured. Always download from the official Releases page.</p>
+
+  <div class="grid">
+    <div class="card"><div class="ic">⚡</div><h3>Built for unreliable connections</h3><p>Pause and resume with HTTP Range, automatic retries with backoff, and optional multi-segment downloading — every byte validated before a file is marked complete.</p></div>
+    <div class="card"><div class="ic">🎬</div><h3>Detects real media files</h3><p>The browser extension finds direct video/audio files as you browse and offers them in Nova — ask-first by default. Streaming and DRM-protected media is never scraped or bypassed.</p></div>
+    <div class="card"><div class="ic">▶️</div><h3>Player included</h3><p>Watch and listen right inside Nova: playlists, seek, speed control, fullscreen, and resume-where-you-left-off. Works with files already on your device, too.</p></div>
+    <div class="card"><div class="ic">🔒</div><h3>Private by design</h3><p>Local-only storage, a token-paired connection between browser and app, private-network blocking, and downloaded programs are never auto-run.</p></div>
+    <div class="card"><div class="ic">🗂️</div><h3>Organized automatically</h3><p>Categories for video, audio, documents and more; per-category folders; queue limits; scheduling; duplicate warnings; full history with search.</p></div>
+    <div class="card"><div class="ic">🪶</div><h3>Lightweight</h3><p>Streaming engine with bounded memory, a 15&nbsp;KB browser extension, and a native Android app. Sensible defaults, no bloat.</p></div>
+  </div>
+
+  <footer>
+    Nova is open source (MIT). It downloads <b>direct files</b>; for platforms like YouTube or TikTok, please use their official offline features.<br/>
+    <a href="https://github.com/kolass89-design/nova-download-manager">GitHub repository</a> · <a href="https://github.com/kolass89-design/nova-download-manager/blob/main/docs/FEATURE-MATRIX.md">Feature matrix</a> · <a href="https://github.com/kolass89-design/nova-download-manager/blob/main/docs/SECURITY.md">Security</a>
+  </footer>
+</div>
+</body>
+</html>
