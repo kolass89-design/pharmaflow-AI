@@ -1,0 +1,21 @@
+# Caddy reverse proxy with automatic HTTPS in front of DOCUPRO.
+# Replace docupro.example.com with your domain, then: caddy run --config deploy/Caddyfile
+docupro.example.com {
+	encode zstd gzip
+
+	# Uploads can be large; keep this above DOCUPRO_MAX_JOB_MB.
+	request_body {
+		max_size 210MB
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "no-referrer"
+		-Server
+	}
+
+	reverse_proxy 127.0.0.1:8000 {
+		header_up X-Forwarded-Proto {scheme}
+	}
+}

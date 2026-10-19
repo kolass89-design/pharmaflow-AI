@@ -1,0 +1,14 @@
+**/node_modules
+**/dist
+**/__pycache__
+**/.pytest_cache
+**/.ruff_cache
+**/.mypy_cache
+**/.venv
+**/*.pyc
+.git
+.github
+data
+Dockerfile
+docs
+tests

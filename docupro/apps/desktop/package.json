@@ -1,0 +1,17 @@
+{
+  "name": "@docupro/desktop",
+  "private": true,
+  "version": "1.0.0",
+  "description": "DOCUPRO desktop and mobile shell (Tauri v2) shared by Windows and Android",
+  "scripts": {
+    "dev": "tauri dev",
+    "build": "tauri build",
+    "build:windows": "tauri build --bundles nsis,msi",
+    "build:android": "tauri android build",
+    "init:android": "tauri android init",
+    "icons": "tauri icon src-tauri/icons/source.png"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.1.0"
+  }
+}

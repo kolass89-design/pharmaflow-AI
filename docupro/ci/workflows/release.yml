@@ -1,0 +1,172 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to build (for example 1.0.0)"
+        required: true
+        default: "1.0.0"
+
+permissions:
+  contents: write
+  packages: write
+
+defaults:
+  run:
+    working-directory: docupro
+
+jobs:
+  web:
+    name: Web bundle
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: docupro/apps/web/package-lock.json
+      - name: Build
+        working-directory: docupro/apps/web
+        run: npm ci --no-audit --no-fund && npm run build
+      - name: Package
+        run: |
+          mkdir -p release
+          cd apps/web/dist && zip -qr "$GITHUB_WORKSPACE/docupro/release/docupro-web-${GITHUB_REF_NAME}.zip" .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web-dist
+          path: docupro/release/*.zip
+
+  windows:
+    name: Windows installer
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: docupro/apps/web/package-lock.json
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: docupro/apps/desktop/src-tauri
+      - name: Install web dependencies
+        working-directory: docupro/apps/web
+        run: npm ci --no-audit --no-fund
+      - name: Install shell dependencies
+        working-directory: docupro/apps/desktop
+        run: npm install --no-audit --no-fund
+      - name: Build installers
+        working-directory: docupro/apps/desktop
+        env:
+          VITE_API_BASE: ${{ vars.DOCUPRO_API_BASE }}
+        run: npm run build:windows
+      - name: Collect artifacts
+        shell: bash
+        run: |
+          mkdir -p release
+          find apps/desktop/src-tauri/target/release/bundle -type f \( -name "*.exe" -o -name "*.msi" \) -exec cp {} release/ \;
+          ls -la release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-installers
+          path: docupro/release/*
+
+  android:
+    name: Android APK and AAB
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: docupro/apps/web/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: docupro/apps/desktop/src-tauri
+      - name: Android SDK packages
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;26.1.10909125" "platforms;android-34" "build-tools;34.0.0"
+          echo "NDK_HOME=$ANDROID_HOME/ndk/26.1.10909125" >> "$GITHUB_ENV"
+      - name: Install dependencies
+        run: |
+          npm --prefix apps/web ci --no-audit --no-fund
+          npm --prefix apps/desktop install --no-audit --no-fund
+      - name: Initialise the Android project
+        working-directory: docupro/apps/desktop
+        run: npx tauri android init --ci
+      - name: Build APK and AAB
+        working-directory: docupro/apps/desktop
+        env:
+          VITE_API_BASE: ${{ vars.DOCUPRO_API_BASE }}
+          NDK_HOME: ${{ env.NDK_HOME }}
+        run: |
+          npx tauri android build --apk --aab --ci
+      - name: Collect artifacts
+        run: |
+          mkdir -p release
+          find apps/desktop/src-tauri/gen/android -type f \( -name "*.apk" -o -name "*.aab" \) -exec cp {} release/ \;
+          ls -la release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-packages
+          path: docupro/release/*
+
+  container:
+    name: Container image (GHCR)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: docupro
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/docupro:${{ github.ref_name }}
+            ghcr.io/${{ github.repository_owner }}/docupro:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  publish:
+    name: Publish release
+    needs: [web, windows, android]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Checksums
+        run: |
+          mkdir -p release
+          find artifacts -type f -exec cp {} release/ \;
+          cd release && sha256sum * > SHA256SUMS.txt && cat SHA256SUMS.txt
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: docupro/release/*
+          generate_release_notes: true
+          fail_on_unmatched_files: false

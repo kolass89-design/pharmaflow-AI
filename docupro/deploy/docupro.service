@@ -1,0 +1,47 @@
+# Hardened systemd unit for a self-hosted DOCUPRO instance.
+# Install:
+#   sudo useradd --system --home /opt/docupro --shell /usr/sbin/nologin docupro
+#   sudo rsync -a --exclude node_modules ./ /opt/docupro/
+#   sudo cp deploy/docupro.service /etc/systemd/system/
+#   sudo systemctl daemon-reload && sudo systemctl enable --now docupro
+[Unit]
+Description=DOCUPRO document conversion service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=docupro
+Group=docupro
+WorkingDirectory=/opt/docupro/services/api
+EnvironmentFile=/etc/docupro/docupro.env
+ExecStart=/opt/docupro/.venv/bin/uvicorn docupro_api.main:app --host 127.0.0.1 --port 8000 --workers 1 --proxy-headers --no-server-header
+Restart=on-failure
+RestartSec=3
+
+# Sandboxing
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+LockPersonality=true
+MemoryDenyWriteExecute=false
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+ReadWritePaths=/var/lib/docupro
+UMask=0077
+
+# Resource limits
+LimitNOFILE=4096
+TasksMax=512
+MemoryMax=2G
+CPUQuota=200%
+
+[Install]
+WantedBy=multi-user.target

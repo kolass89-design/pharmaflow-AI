@@ -1,0 +1,61 @@
+name: Deploy
+
+# Manual, secret-driven deployment to a real host.
+# Required repository secrets, depending on the target:
+#   RENDER_DEPLOY_HOOK_URL  - Render deploy hook for the docupro service
+#   DOCUPRO_PUBLIC_URL      - public base URL used for verification
+#   FLY_API_TOKEN           - optional, for the Fly.io job
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Where to deploy"
+        type: choice
+        options: ["render", "fly"]
+        default: "render"
+      verify_only:
+        description: "Only verify the deployed service"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    if: inputs.target == 'render' && !inputs.verify_only
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render deploy
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$HOOK" ]; then echo "RENDER_DEPLOY_HOOK_URL is not configured"; exit 1; fi
+          curl -fsS -X POST "$HOOK"
+
+  fly:
+    if: inputs.target == 'fly' && !inputs.verify_only
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - name: Deploy
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: flyctl deploy --remote-only --config docupro/fly.toml --dockerfile docupro/Dockerfile
+
+  verify:
+    needs: [render, fly]
+    if: always() && (inputs.verify_only || success())
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Verify the public deployment
+        env:
+          DOCUPRO_PUBLIC_URL: ${{ secrets.DOCUPRO_PUBLIC_URL }}
+        run: |
+          if [ -z "$DOCUPRO_PUBLIC_URL" ]; then echo "DOCUPRO_PUBLIC_URL is not configured"; exit 1; fi
+          python docupro/scripts/smoke_deploy.py "$DOCUPRO_PUBLIC_URL"

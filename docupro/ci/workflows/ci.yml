@@ -1,0 +1,253 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  PYTHONUNBUFFERED: "1"
+  NODE_VERSION: "22"
+
+defaults:
+  run:
+    working-directory: docupro
+
+jobs:
+  backend:
+    name: Backend — lint and tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: docupro/services/api/requirements.txt
+
+      - name: Install system tools (OCR, Office, fonts)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            tesseract-ocr tesseract-ocr-fra tesseract-ocr-eng \
+            libreoffice-writer libreoffice-calc libreoffice-impress \
+            fonts-dejavu-core fonts-noto-core
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r services/api/requirements-dev.txt
+          pip install "rapidocr-onnxruntime==1.4.4" "opencv-python-headless==4.10.0.84"
+
+      - name: Lint
+        working-directory: docupro/services/api
+        run: |
+          ruff check .
+          ruff format --check .
+
+      - name: Tests with coverage
+        working-directory: docupro/services/api
+        run: pytest -q --cov=docupro_api --cov-report=term-missing --cov-report=xml
+
+      - name: Toolchain report
+        run: |
+          python - <<'PY'
+          import shutil, json
+          print(json.dumps({"libreoffice": shutil.which("soffice"), "tesseract": shutil.which("tesseract")}, indent=2))
+          PY
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage
+          path: docupro/services/api/coverage.xml
+          if-no-files-found: ignore
+
+  engines:
+    name: Engines — every advertised conversion
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: docupro/services/api/requirements.txt
+
+      - name: Install system tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            tesseract-ocr tesseract-ocr-fra tesseract-ocr-eng \
+            libreoffice-writer libreoffice-calc libreoffice-impress \
+            fonts-dejavu-core fonts-noto-core
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r services/api/requirements.txt
+
+      - name: Build the fixture corpus
+        run: python tests/corpus/make_corpus.py tests/corpus/generated && ls -la tests/corpus/generated
+
+      - name: Verify every conversion
+        run: VERBOSE=1 python scripts/verify_engines.py tests/corpus/generated
+
+      - name: Upload conversion samples
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: engine-outputs
+          path: /tmp/docupro-verify-*/jobs/**/output/*
+          if-no-files-found: ignore
+
+  web:
+    name: Web — types, build, UI test
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: docupro/apps/web/package-lock.json
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: docupro/services/api/requirements.txt
+
+      - name: Install web dependencies
+        working-directory: docupro/apps/web
+        run: npm ci --no-audit --no-fund
+
+      - name: Type-check
+        working-directory: docupro/apps/web
+        run: npx tsc --noEmit
+
+      - name: Production build
+        working-directory: docupro/apps/web
+        run: npm run build
+
+      - name: Install API for the UI test
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r services/api/requirements.txt
+          python tests/corpus/make_corpus.py tests/corpus/generated
+
+      - name: Start the production server
+        run: |
+          DOCUPRO_WEB_DIR="$GITHUB_WORKSPACE/docupro/apps/web/dist" \
+          DOCUPRO_DATA_DIR=/tmp/docupro-ci \
+          nohup python -m uvicorn docupro_api.main:app --app-dir services/api --host 127.0.0.1 --port 8000 > /tmp/server.log 2>&1 &
+          for i in $(seq 1 45); do
+            curl -fsS http://127.0.0.1:8000/api/health && break || sleep 1
+          done
+
+      - name: UI smoke test (jsdom)
+        working-directory: docupro/apps/web
+        env:
+          DOCUPRO_API_URL: http://127.0.0.1:8000
+          DOCUPRO_CORPUS: ${{ github.workspace }}/docupro/tests/corpus/generated
+          SMOKE_BUNDLE: /tmp/docupro-smoke.cjs
+          FLOW_BUNDLE: /tmp/docupro-flow.cjs
+        run: |
+          npx esbuild src/smoke-entry.tsx --bundle --outfile=/tmp/docupro-smoke.cjs \
+            --platform=node --format=cjs --alias:@=./src --jsx=automatic --define:import.meta.env='{}'
+          npx esbuild src/flow-entry.tsx --bundle --outfile=/tmp/docupro-flow.cjs \
+            --platform=node --format=cjs --alias:@=./src --jsx=automatic --define:import.meta.env='{}'
+          node scripts-dom-smoke.mjs
+          node scripts/ui-flow.mjs
+
+      - name: Server log on failure
+        if: failure()
+        run: cat /tmp/server.log
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web-dist
+          path: docupro/apps/web/dist
+          retention-days: 14
+
+  docker:
+    name: Container — build and run
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build -t docupro:ci .
+
+      - name: Run container
+        run: |
+          docker run -d --name docupro -p 8000:8000 -e DOCUPRO_MAX_CONCURRENCY=2 docupro:ci
+          for i in $(seq 1 60); do
+            curl -fsS http://127.0.0.1:8000/api/health && break || sleep 2
+          done
+          curl -fsS http://127.0.0.1:8000/api/capabilities | head -c 600
+
+      - name: Convert inside the container
+        run: |
+          python tests/corpus/make_corpus.py tests/corpus/generated
+          python - <<'PY'
+          import json, os, subprocess, time, urllib.request, zipfile
+          fixture = "tests/corpus/generated/report-fr.pdf"
+          out = subprocess.run(
+              ["curl", "-sS", "-X", "POST", "http://127.0.0.1:8000/api/jobs",
+               "-F", "tool=pdf-to-word", "-F", "options={}",
+               "-F", f"files=@{fixture};type=application/pdf"],
+              capture_output=True, text=True, check=True).stdout
+          job = json.loads(out)
+          state = {}
+          for _ in range(180):
+              with urllib.request.urlopen(f"http://127.0.0.1:8000/api/jobs/{job['id']}") as response:
+                  state = json.load(response)
+              if state["status"] in {"succeeded", "failed", "cancelled"}:
+                  break
+              time.sleep(0.5)
+          print(json.dumps(state, indent=2)[:1500])
+          assert state["status"] == "succeeded", state
+          path = "/tmp/container-output.docx"
+          subprocess.run(["curl", "-fsS", "-o", path, "http://127.0.0.1:8000" + state["artifacts"][0]["url"]], check=True)
+          assert os.path.getsize(path) > 1000
+          assert zipfile.ZipFile(path).testzip() is None
+          print("container conversion OK:", os.path.getsize(path), "bytes")
+          PY
+
+      - name: Image size
+        run: docker image ls docupro:ci --format '{{.Size}}'
+
+      - name: Container logs
+        if: failure()
+        run: docker logs docupro
+
+  contract:
+    name: Catalog contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: docupro/services/api/requirements.txt
+      - run: |
+          pip install -r services/api/requirements.txt
+          python scripts/export_catalog.py --check

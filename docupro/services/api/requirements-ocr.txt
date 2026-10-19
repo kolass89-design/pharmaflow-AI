@@ -1,0 +1,5 @@
+# Optional OCR fallback for hosts where Tesseract cannot be installed.
+# Tesseract remains the preferred engine (wider language coverage); installing
+# these packages makes OCR work on a pip-only host through RapidOCR/ONNX.
+rapidocr-onnxruntime==1.4.4
+opencv-python-headless==4.10.0.84
