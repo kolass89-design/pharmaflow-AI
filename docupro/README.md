@@ -52,8 +52,8 @@ LibreOffice (PowerPoint, legacy `.doc`, high-fidelity Word rendering).
 
 ```bash
 cd docupro
-python3 -m venv .venv && . .venv/bin/activate
-pip install -r services/api/requirements-dev.txt
+./scripts/setup_env.sh --ocr     # .venv + backend, tests and OCR fallback
+. .venv/bin/activate
 cd apps/web && npm ci && npm run build && cd ../..
 DOCUPRO_WEB_DIR=$PWD/apps/web/dist \
   .venv/bin/python -m uvicorn docupro_api.main:app --app-dir services/api --port 8000

@@ -4,10 +4,11 @@ API := services/api
 WEB := apps/web
 PY := $(if $(wildcard .venv/bin/python),.venv/bin/python,python3)
 
-.PHONY: help setup api web dev lint fmt test verify docker run clean
+.PHONY: help setup setup-ocr api web dev lint fmt test verify docker run clean
 
 help:
 	@echo "make setup   create .venv and install backend + web dependencies"
+	@echo "make setup-ocr  same, plus the pip-only OCR fallback (RapidOCR)"
 	@echo "make api     run the API on :8000 (with hot reload)"
 	@echo "make web     run the Vite dev server on :5173"
 	@echo "make dev     run API and web together"
@@ -18,9 +19,11 @@ help:
 	@echo "make run     build the web client and serve everything on :8000"
 
 setup:
-	python3 -m venv .venv
-	.venv/bin/pip install -U pip
-	.venv/bin/pip install -r $(API)/requirements-dev.txt
+	./scripts/setup_env.sh
+	cd $(WEB) && npm ci
+
+setup-ocr:
+	./scripts/setup_env.sh --ocr
 	cd $(WEB) && npm ci
 
 api:

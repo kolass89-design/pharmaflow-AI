@@ -1,6 +1,7 @@
 /** Run the UI smoke test in jsdom against the live DOCUPRO server. */
 import { JSDOM } from "jsdom";
 import { createRequire } from "node:module";
+import { existsSync } from "node:fs";
 
 const API = process.env.DOCUPRO_API_URL ?? "http://127.0.0.1:8000";
 const dom = new JSDOM(
@@ -47,5 +48,14 @@ global.fetch = (input, init) => {
 };
 window.fetch = global.fetch;
 
+const bundle = process.env.SMOKE_BUNDLE ?? "/tmp/docupro-smoke.cjs";
+if (!existsSync(bundle)) {
+  console.error(
+    `Missing UI bundle ${bundle}.\nBuild it first:\n` +
+      "  npx esbuild src/smoke-entry.tsx --bundle --outfile=/tmp/docupro-smoke.cjs \\\n" +
+      "    --platform=node --format=cjs --alias:@=./src --jsx=automatic --define:import.meta.env='{}'",
+  );
+  process.exit(2);
+}
 const require = createRequire(import.meta.url);
-require(process.env.SMOKE_BUNDLE ?? "/tmp/docupro-smoke.cjs");
+require(bundle);

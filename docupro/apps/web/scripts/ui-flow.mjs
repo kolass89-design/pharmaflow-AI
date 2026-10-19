@@ -1,7 +1,7 @@
 /** jsdom-driven end-to-end UI test against a running DOCUPRO server. */
 import { JSDOM } from "jsdom";
 import { createRequire } from "node:module";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 const API = process.env.DOCUPRO_API_URL ?? "http://127.0.0.1:8000";
@@ -46,5 +46,14 @@ window.fetch = global.fetch;
 window.__FIXTURE_PDF__ = new Uint8Array(readFileSync(`${CORPUS}/report-fr.pdf`));
 window.__FIXTURE_BAD__ = new Uint8Array(readFileSync(`${CORPUS}/corrupted.pdf`));
 
+const bundle = process.env.FLOW_BUNDLE ?? "/tmp/docupro-flow.cjs";
+if (!existsSync(bundle)) {
+  console.error(
+    `Missing UI bundle ${bundle}.\nBuild it first:\n` +
+      "  npx esbuild src/flow-entry.tsx --bundle --outfile=/tmp/docupro-flow.cjs \\\n" +
+      "    --platform=node --format=cjs --alias:@=./src --jsx=automatic --define:import.meta.env='{}'",
+  );
+  process.exit(2);
+}
 const require = createRequire(import.meta.url);
-require(process.env.FLOW_BUNDLE ?? "/tmp/docupro-flow.cjs");
+require(bundle);

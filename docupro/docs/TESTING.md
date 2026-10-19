@@ -6,10 +6,14 @@ are in the `docupro/` directory.
 ## 1. Environment
 
 ```bash
-python3 -m venv .venv && . .venv/bin/activate
-pip install -r services/api/requirements-dev.txt
+./scripts/setup_env.sh --ocr     # creates .venv, installs the API, tests and OCR fallback
 cd apps/web && npm ci && cd ../..
 ```
+
+`setup_env.sh` also removes the full OpenCV wheel that `rapidocr-onnxruntime`
+pulls in and reinstalls the headless one: both ship a `cv2` package, and the
+full wheel fails on hosts without `libGL` (`libGL.so.1: cannot open shared
+object file`). Without `--ocr`, install Tesseract for OCR instead.
 
 Optional but used by several tests:
 
