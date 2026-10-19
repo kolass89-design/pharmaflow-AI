@@ -7,6 +7,7 @@ import {
   FileDown,
   Loader2,
   RefreshCw,
+  Share2,
   Trash2,
 } from "lucide-react";
 import type { Job } from "@/lib/api";
@@ -85,6 +86,32 @@ export function ResultList({
       if (result === "saved") push(`Downloaded ${artifact.name}`, "success");
     } catch (error) {
       push((error as Error).message || "The download failed. The file may have expired.", "error");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  // Mobile browsers expose the system share sheet; use it when files are allowed.
+  const canShareFiles = useMemo(
+    () => typeof navigator !== "undefined" && typeof navigator.canShare === "function",
+    [],
+  );
+
+  const share = async (artifact: Job["artifacts"][number]) => {
+    setBusy(`share-${artifact.id}`);
+    try {
+      const { blob, filename } = await fetchArtifact(artifact.url);
+      const name = filename ?? artifact.name;
+      const file = new File([blob], name, { type: artifact.mediaType });
+      if (!navigator.canShare?.({ files: [file] })) {
+        push("This browser cannot share files — use Download instead.", "info");
+        return;
+      }
+      await navigator.share({ files: [file], title: name });
+    } catch (error) {
+      if ((error as Error).name !== "AbortError") {
+        push("Sharing was not possible. Use Download instead.", "error");
+      }
     } finally {
       setBusy(null);
     }
@@ -185,6 +212,22 @@ export function ResultList({
                       <Eye className="h-3.5 w-3.5" aria-hidden="true" />
                     )}
                     Preview
+                  </button>
+                )}
+                {canShareFiles && (
+                  <button
+                    type="button"
+                    className="btn-secondary !px-3 !py-1.5 text-xs"
+                    onClick={() => share(artifact)}
+                    disabled={busy === `share-${artifact.id}`}
+                    aria-label={`Share ${artifact.name}`}
+                  >
+                    {busy === `share-${artifact.id}` ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+                    ) : (
+                      <Share2 className="h-3.5 w-3.5" aria-hidden="true" />
+                    )}
+                    Share
                   </button>
                 )}
                 <button

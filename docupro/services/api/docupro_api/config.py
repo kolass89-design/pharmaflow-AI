@@ -54,6 +54,11 @@ class Settings:
     download_window_minutes: int = field(default_factory=lambda: _int("DOCUPRO_DOWNLOAD_WINDOW_MINUTES", 30, 1))
     sweep_interval_seconds: int = field(default_factory=lambda: _int("DOCUPRO_SWEEP_SECONDS", 30, 5))
     max_retained_jobs: int = field(default_factory=lambda: _int("DOCUPRO_MAX_RETAINED_JOBS", 200, 10))
+    # Seconds kept after every artifact has been downloaded at least once.
+    # 0 keeps the full retention window.
+    delete_after_download_seconds: int = field(
+        default_factory=lambda: _int("DOCUPRO_DELETE_AFTER_DOWNLOAD_SECONDS", 120, 0)
+    )
 
     # Execution
     conversion_timeout: int = field(default_factory=lambda: _int("DOCUPRO_CONVERSION_TIMEOUT", 240, 10))

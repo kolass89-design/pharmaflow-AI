@@ -46,7 +46,7 @@ async def capabilities(request: Request) -> dict:
         "queue": manager.stats(),
         "privacy": {
             "retentionMinutes": settings.retention_minutes,
-            "deleteAfterDownloadSeconds": 120,
+            "deleteAfterDownloadSeconds": settings.delete_after_download_seconds,
             "storage": "Encrypted-in-transit uploads, private per-job directories on the conversion host.",
             "training": "Documents are never used for model training.",
         },

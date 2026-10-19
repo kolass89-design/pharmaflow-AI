@@ -310,3 +310,28 @@ def unique_name(base: str, used: set[str], extension: str = "") -> str:
 
 def number_to_words_placeholder() -> None:  # pragma: no cover
     """Kept for API stability; numbering uses digits only."""
+
+
+#: Presentation-form ligatures that some PDF generators emit as single glyphs.
+#: Extracted text such as "ﬁchier" breaks search, spell-check and screen readers,
+#: so every text extraction path normalises them to plain letters.
+LIGATURE_REPLACEMENTS = {
+    "\ufb00": "ff",
+    "\ufb01": "fi",
+    "\ufb02": "fl",
+    "\ufb03": "ffi",
+    "\ufb04": "ffl",
+    "\ufb05": "ft",
+    "\ufb06": "st",
+}
+
+
+def normalize_ligatures(text: str) -> str:
+    """Replace presentation-form ligatures with their plain letter sequences."""
+    if not text:
+        return text
+    if not any(character in text for character in LIGATURE_REPLACEMENTS):
+        return text
+    for ligature, plain in LIGATURE_REPLACEMENTS.items():
+        text = text.replace(ligature, plain)
+    return text

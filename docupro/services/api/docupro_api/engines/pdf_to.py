@@ -13,6 +13,7 @@ from . import ocr
 from . import validation as v
 from .common import (
     make_zip,
+    normalize_ligatures,
     open_pdf,
     parse_page_selection,
     render_page_bytes,
@@ -85,6 +86,38 @@ def _ocr_docx(ctx, doc: pymupdf.Document, language: str, note: str) -> Path:
     return target
 
 
+def _normalize_docx_text(path: Path) -> None:
+    """Replace presentation-form ligatures left behind by the layout analyser.
+
+    pdf2docx copies glyphs such as U+FB01 straight out of the PDF, which makes
+    words like "fichier" unsearchable in the resulting Word document.
+    """
+    import docx
+
+    document = docx.Document(str(path))
+    changed = False
+
+    def fix(paragraphs) -> None:
+        nonlocal changed
+        for paragraph in paragraphs:
+            for run in paragraph.runs:
+                cleaned = normalize_ligatures(run.text)
+                if cleaned != run.text:
+                    run.text = cleaned
+                    changed = True
+
+    fix(document.paragraphs)
+    for table in document.tables:
+        for row in table.rows:
+            for cell in row.cells:
+                fix(cell.paragraphs)
+    for section in document.sections:
+        for part in (section.header, section.footer):
+            fix(part.paragraphs)
+    if changed:
+        document.save(str(path))
+
+
 def pdf_to_word(ctx) -> list:
     source = ctx.files[0]
     mode = str(ctx.opt("mode", "auto"))
@@ -133,6 +166,8 @@ def pdf_to_word(ctx) -> list:
             else:
                 method = "layout"
 
+    if method == "layout":
+        _normalize_docx_text(target)
     items = v.validate_docx(target)
     ctx.report(0.98, "Validating output")
     return [
@@ -268,7 +303,7 @@ def pdf_to_text(ctx) -> list:
         for position, index in enumerate(selection):
             ctx.check_cancel()
             page = doc.load_page(index)
-            text = page.get_text("text", sort=True).strip()
+            text = normalize_ligatures(page.get_text("text", sort=True).strip())
             if not text and ocr_fallback:
                 ocr.require_ocr_engine()
                 pix = page.get_pixmap(dpi=220, colorspace=pymupdf.csRGB, alpha=False)

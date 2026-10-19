@@ -153,13 +153,13 @@ run exists.
 ```text
 $ npx tsc --noEmit                 success (strict mode, noUnusedLocals)
 $ npm run build
-dist/assets/index-D0bUCTMw.js   134 748 B │ gzip 33.38 kB
-dist/assets/react-DmR3E_LE.js   164 086 B │ gzip 52.21 kB
-dist/assets/index-DyRTtyJj.css   48 399 B │ gzip  8.39 kB
-✓ built in 3.23s
+dist/assets/index-*.js         134 551 B │ gzip 34.30 kB
+dist/assets/react-*.js         164 086 B │ gzip 53.56 kB
+dist/assets/index-*.css         48 399 B │ gzip  8.39 kB
+✓ built in 2.84s
 
-Total initial payload including lazy chunks: JS 89.41 kB gzipped,
-CSS 8.34 kB gzipped (measured with gzip on the emitted files).
+Total including lazy chunks: JS 89.4 kB gzipped, CSS 8.3 kB gzipped
+(measured by gzipping the emitted files; asset hashes change on every build).
 ```
 
 UI tests (jsdom, against the live production server):

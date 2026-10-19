@@ -2,9 +2,11 @@
 import { JSDOM } from "jsdom";
 import { createRequire } from "node:module";
 import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 
 const API = process.env.DOCUPRO_API_URL ?? "http://127.0.0.1:8000";
-const CORPUS = process.env.DOCUPRO_CORPUS ?? "/home/user/corpus";
+const CORPUS =
+  process.env.DOCUPRO_CORPUS ?? fileURLToPath(new URL("../../../tests/corpus/generated", import.meta.url));
 
 const dom = new JSDOM(`<!doctype html><html><body><div id="root"></div></body></html>`, {
   url: API + "/",
@@ -14,7 +16,8 @@ const { window } = dom;
 global.window = window;
 global.document = window.document;
 Object.defineProperty(global, "navigator", { value: window.navigator, configurable: true });
-for (const name of ["HTMLElement", "Node", "MouseEvent", "PopStateEvent", "CustomEvent", "Event", "FormData", "File", "Blob", "EventTarget"]) {
+for (const name of ["HTMLElement", "Node", "MouseEvent", "PopStateEvent", "CustomEvent", "Event", "FormData", "File", "Blob", "EventTarget",
+         "XMLHttpRequest"]) {
   global[name] = window[name];
 }
 global.localStorage = window.localStorage;

@@ -273,3 +273,65 @@ def test_unavailable_tool_reports_reason(client):
     unavailable = [t for t in tools.values() if not t["available"]]
     for tool in unavailable:
         assert tool["unavailableReason"]
+
+
+def test_download_rejects_unknown_artifact_id(client, corpus):
+    """A valid token must not unlock a different artifact slot."""
+    job = submit(client, "pdf-to-text", [corpus / "report-fr.pdf"]).json()
+    final = wait_for_job(client, job["id"])
+    token = final["artifacts"][0]["url"].split("token=")[1]
+    response = client.get(f"/api/jobs/{job['id']}/download/a7?token={token}")
+    assert response.status_code == 404
+    assert response.json()["error"]["code"] == "artifact_not_found"
+
+
+def test_download_shortens_retention():
+    """After the last artifact is downloaded, expiry is brought forward."""
+    import time
+    from dataclasses import replace
+    from pathlib import Path
+    from types import SimpleNamespace
+
+    from docupro_api.config import get_settings
+    from docupro_api.jobs import Job, JobManager
+
+    settings = replace(get_settings(), delete_after_download_seconds=60)
+    now = time.time()
+    job = Job(
+        id="a" * 32,
+        tool="pdf-to-text",
+        token="t" * 32,
+        status="succeeded",
+        options={},
+        inputs=[],
+        created_at=now,
+        expires_at=now + 1800,
+        root=Path("/tmp/docupro-retention"),
+        max_seconds=60,
+    )
+    job.artifacts = [{"id": "a1"}, {"id": "a2"}]
+
+    manager = SimpleNamespace(settings=settings)
+    JobManager.register_download(manager, job, "a1")
+    assert job.expires_at == now + 1800, "a single download must not shorten retention"
+
+    JobManager.register_download(manager, job, "a2")
+    assert job.expires_at <= time.time() + 61
+    assert job.expires_at > time.time() + 50
+
+
+def test_settings_accept_configured_delete_window(monkeypatch):
+    from docupro_api.config import Settings
+
+    monkeypatch.setenv("DOCUPRO_DELETE_AFTER_DOWNLOAD_SECONDS", "45")
+    assert Settings().delete_after_download_seconds == 45
+
+
+def test_artifact_layout_uses_opaque_names(client, corpus):
+    """Stored files never carry user-controlled names."""
+    job = submit(client, "pdf-to-text", [corpus / "report-fr.pdf"]).json()
+    wait_for_job(client, job["id"])
+    manager = __import__("docupro_api.main", fromlist=["app"]).app.state.manager
+    stored = sorted(p.name for p in (manager.get(job["id"]).output_dir).iterdir())
+    assert stored == ["artifact-a1"]
+    assert manager.get(job["id"]).inputs[0]["name"] == "report-fr.pdf"

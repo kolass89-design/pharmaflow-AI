@@ -544,12 +544,8 @@ class JobManager:
         for artifact in job.artifacts:
             if artifact["id"] == artifact_id:
                 path = job.output_dir / f"artifact-{artifact_id}"
-                if not path.exists():
-                    # Fall back to matching by stored file name on disk.
-                    candidates = list(job.output_dir.iterdir())
-                    if not candidates:
-                        raise NotFound("This file has already been removed.", code="artifacts_gone")
-                    path = candidates[0]
+                if not path.is_file():
+                    raise NotFound("This file has already been removed.", code="artifacts_gone")
                 return job, path, artifact
         raise NotFound("Unknown file for this conversion.", code="artifact_not_found")
 
@@ -557,10 +553,9 @@ class JobManager:
         with job.lock:
             job.downloaded.add(artifact_id)
             ids = {a["id"] for a in job.artifacts}
-            if ids and job.downloaded >= ids:
+            if ids and job.downloaded >= ids and self.settings.delete_after_download_seconds > 0:
                 # Everything has been collected: shorten retention.
-                grace = 120
-                job.expires_at = min(job.expires_at, time.time() + grace)
+                job.expires_at = min(job.expires_at, time.time() + self.settings.delete_after_download_seconds)
 
     def stats(self) -> dict[str, Any]:
         with self._lock:
