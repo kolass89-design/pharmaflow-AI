@@ -4,7 +4,7 @@ name: Nova Download Manager CI
 # nova-download-manager/. It only runs for Nova-related pushes.
 on:
   push:
-    branches: ["arena/8c10c7b1-pharmaflow-ai"]
+    branches: ["arena/8c10c7b1-pharmaflow-ai", "main"]
     paths:
       - "nova-download-manager/**"
       - ".github/workflows/nova-ci.yml"
