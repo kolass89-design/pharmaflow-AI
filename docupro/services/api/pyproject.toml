@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "docupro-api"
+version = "1.0.0"
+description = "DOCUPRO document conversion API and worker"
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+extend-exclude = ["tests/corpus"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+ignore = [
+    "E501",    # long lines are handled by the formatter
+    "BLE001",  # broad excepts are deliberate in conversion fallbacks
+    "S110",    # explicit pass in cleanup paths
+    "S112",    # explicit continue when scanning optional document parts
+    "B017",    # tests assert that invalid input raises
+    "RUF012",  # class-level constants typed as tuples
+    "SIM102",  # nested ifs keep failure handling readable
+    "B905",
+    "SIM105",
+    "RUF005",
+    "SIM108",
+    "RUF046",
+    "B006",  # FastAPI requires the empty-list default for optional uploads
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.coverage.run]
+source = ["docupro_api"]
+omit = ["tests/*"]

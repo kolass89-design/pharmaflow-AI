@@ -1,0 +1,48 @@
+# dependencies
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# build output
+dist/
+build/
+out/
+target/
+apps/web/dist/
+apps/web/dev-dist/
+*.tsbuildinfo
+
+# tauri / native
+apps/desktop/src-tauri/target/
+apps/desktop/src-tauri/gen/schemas/
+apps/desktop/src-tauri/gen/android/app/release/
+*.apk
+*.aab
+*.msi
+*.msix
+
+# runtime data
+data/
+tmp/
+uploads/
+*.log
+
+# env / secrets
+.env
+.env.*
+!.env.example
+*.keystore
+*.jks
+*.pem
+*.p12
+*.pfx
+
+# editor / os
+.DS_Store
+.idea/
+.vscode/
