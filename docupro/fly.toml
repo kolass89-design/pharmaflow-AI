@@ -1,0 +1,37 @@
+# Fly.io configuration for DOCUPRO.
+#   fly volumes create docupro_data --size 1 --region cdg
+#   fly deploy --config fly.toml --dockerfile Dockerfile
+app = "docupro"
+primary_region = "cdg"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  DOCUPRO_DATA_DIR = "/data"
+  DOCUPRO_WEB_DIR = "/app/web"
+  DOCUPRO_MAX_CONCURRENCY = "2"
+  DOCUPRO_RETENTION_MINUTES = "30"
+  DOCUPRO_TRUST_PROXY = "1"
+
+[[mounts]]
+  source = "docupro_data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+[[http_service.checks]]
+  interval = "30s"
+  timeout = "5s"
+  grace_period = "20s"
+  method = "GET"
+  path = "/api/health"
+
+[[vm]]
+  size = "shared-cpu-2x"
+  memory = "2gb"

@@ -46,3 +46,10 @@ uploads/
 .DS_Store
 .idea/
 .vscode/
+.coverage
+coverage.xml
+
+# generated fixtures and coverage
+tests/corpus/generated/
+.coverage
+coverage.xml

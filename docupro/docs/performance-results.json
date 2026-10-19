@@ -1,0 +1,197 @@
+{
+  "generatedAt": "2026-10-19T05:47:12Z",
+  "environment": {
+    "python": "3.11.2",
+    "platform": "Linux-6.1.158+-x86_64-with-glibc2.36",
+    "machine": "x86_64",
+    "cpuCount": 2,
+    "peakResidentMegabytes": 1085.9
+  },
+  "results": [
+    {
+      "tool": "pdf-to-text",
+      "files": [
+        "report-fr.pdf"
+      ],
+      "inputBytes": 710498,
+      "outputBytes": 2000,
+      "runs": 5,
+      "medianSeconds": 0.011,
+      "minSeconds": 0.01,
+      "maxSeconds": 0.015
+    },
+    {
+      "tool": "pdf-to-word",
+      "files": [
+        "report-fr.pdf"
+      ],
+      "inputBytes": 710498,
+      "outputBytes": 42073,
+      "runs": 3,
+      "medianSeconds": 0.341,
+      "minSeconds": 0.332,
+      "maxSeconds": 0.458
+    },
+    {
+      "tool": "pdf-to-jpeg",
+      "files": [
+        "report-fr.pdf"
+      ],
+      "inputBytes": 710498,
+      "outputBytes": 179797,
+      "runs": 3,
+      "medianSeconds": 0.273,
+      "minSeconds": 0.268,
+      "maxSeconds": 0.278
+    },
+    {
+      "tool": "pdf-to-searchable",
+      "files": [
+        "scan-fr.pdf"
+      ],
+      "inputBytes": 6528461,
+      "outputBytes": 436834,
+      "runs": 2,
+      "medianSeconds": 2.135,
+      "minSeconds": 1.419,
+      "maxSeconds": 2.851
+    },
+    {
+      "tool": "compress-pdf",
+      "files": [
+        "report-fr.pdf"
+      ],
+      "inputBytes": 710498,
+      "outputBytes": 20015,
+      "runs": 3,
+      "medianSeconds": 0.015,
+      "minSeconds": 0.015,
+      "maxSeconds": 0.015
+    },
+    {
+      "tool": "merge-pdf",
+      "files": [
+        "report-fr.pdf",
+        "report-fr.pdf",
+        "report-fr.pdf"
+      ],
+      "inputBytes": 2131494,
+      "outputBytes": 15681,
+      "runs": 3,
+      "medianSeconds": 0.016,
+      "minSeconds": 0.016,
+      "maxSeconds": 0.016
+    },
+    {
+      "tool": "image-to-pdf",
+      "files": [
+        "photo.jpg",
+        "photo.jpg",
+        "photo.jpg",
+        "photo.jpg"
+      ],
+      "inputBytes": 181104,
+      "outputBytes": 39175,
+      "runs": 3,
+      "medianSeconds": 0.023,
+      "minSeconds": 0.023,
+      "maxSeconds": 0.025
+    },
+    {
+      "tool": "image-resize",
+      "files": [
+        "photo.jpg"
+      ],
+      "inputBytes": 45276,
+      "outputBytes": 16103,
+      "runs": 3,
+      "medianSeconds": 0.012,
+      "minSeconds": 0.012,
+      "maxSeconds": 0.013
+    },
+    {
+      "tool": "word-to-pdf",
+      "files": [
+        "report.docx"
+      ],
+      "inputBytes": 43370,
+      "outputBytes": 486759,
+      "runs": 3,
+      "medianSeconds": 0.113,
+      "minSeconds": 0.108,
+      "maxSeconds": 0.121
+    },
+    {
+      "tool": "pdf-to-excel",
+      "files": [
+        "report-fr.pdf"
+      ],
+      "inputBytes": 710498,
+      "outputBytes": 6532,
+      "runs": 3,
+      "medianSeconds": 0.046,
+      "minSeconds": 0.042,
+      "maxSeconds": 0.096
+    },
+    {
+      "tool": "pdf-to-text",
+      "files": [
+        "bench-50-pages.pdf"
+      ],
+      "inputBytes": 497084,
+      "outputBytes": 33390,
+      "runs": 3,
+      "medianSeconds": 0.142,
+      "minSeconds": 0.139,
+      "maxSeconds": 0.145
+    },
+    {
+      "tool": "pdf-to-word",
+      "files": [
+        "bench-50-pages.pdf"
+      ],
+      "inputBytes": 497084,
+      "outputBytes": 55391,
+      "runs": 2,
+      "medianSeconds": 5.407,
+      "minSeconds": 5.389,
+      "maxSeconds": 5.424
+    },
+    {
+      "tool": "pdf-to-jpeg",
+      "files": [
+        "bench-50-pages.pdf"
+      ],
+      "inputBytes": 497084,
+      "outputBytes": 3001681,
+      "runs": 2,
+      "medianSeconds": 4.308,
+      "minSeconds": 4.234,
+      "maxSeconds": 4.383
+    },
+    {
+      "tool": "compress-pdf",
+      "files": [
+        "bench-50-pages.pdf"
+      ],
+      "inputBytes": 497084,
+      "outputBytes": 22258,
+      "runs": 2,
+      "medianSeconds": 0.172,
+      "minSeconds": 0.172,
+      "maxSeconds": 0.173
+    },
+    {
+      "tool": "image-to-pdf",
+      "files": [
+        "bench-12mp.jpg"
+      ],
+      "inputBytes": 842071,
+      "outputBytes": 401733,
+      "runs": 2,
+      "medianSeconds": 0.042,
+      "minSeconds": 0.042,
+      "maxSeconds": 0.043
+    }
+  ]
+}
