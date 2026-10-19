@@ -22,7 +22,9 @@ TIMEOUT = 30
 def request(url: str, *, method: str = "GET", data: bytes | None = None, headers: dict | None = None):
     req = urllib.request.Request(url, data=data, method=method, headers=headers or {})
     with urllib.request.urlopen(req, timeout=TIMEOUT) as response:
-        return response.status, dict(response.headers), response.read()
+        # HTTP header names are case-insensitive; normalise them for lookups.
+        headers = {key.lower(): value for key, value in response.headers.items()}
+        return response.status, headers, response.read()
 
 
 def build_pdf() -> bytes:
@@ -74,7 +76,7 @@ def main() -> int:
     try:
         status, headers, body = request(f"{base}/api/health")
         check("health", status == 200 and json.loads(body)["status"] == "ok", json.loads(body))
-        check("security headers", headers.get("X-Content-Type-Options") == "nosniff")
+        check("security headers", headers.get("x-content-type-options") == "nosniff")
 
         status, _, body = request(f"{base}/api/tools")
         catalog = json.loads(body)
@@ -89,7 +91,8 @@ def main() -> int:
         report["engines"] = caps.get("engines")
 
         status, _, body = request(f"{base}/")
-        check("web client served", status == 200 and b"<div id=\"root\">" in body, len(body))
+        marker = b'id="root"'
+        check("web client served", status == 200 and marker in body and b"/assets/" in body, len(body))
 
         pdf = build_pdf()
         form, content_type = multipart(
@@ -121,7 +124,7 @@ def main() -> int:
                 status == 200 and payload[:2] == b"PK" and len(payload) == artifact["size"],
                 f"{len(payload)} bytes",
             )
-            check("download is not cacheable", "no-store" in headers.get("Cache-Control", ""))
+            check("download is not cacheable", "no-store" in headers.get("cache-control", ""))
             bare = url.split("?")[0]
             try:
                 request(bare)

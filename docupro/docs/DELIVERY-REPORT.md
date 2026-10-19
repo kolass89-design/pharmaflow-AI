@@ -22,7 +22,7 @@ DOCUPRO is a complete document conversion product:
 | Windows / Android shell (Tauri v2, native dialogs) | **Source complete, buildable; no binary built here** (no Rust/Java/Windows toolchain in this sandbox) |
 | Container image | **Dockerfile complete; not built here** (no Docker daemon in this sandbox) |
 | CI / release pipelines | **Written and versioned in `ci/workflows/`; cannot be pushed to `.github/workflows` with this token** |
-| Live public deployment | **Not done**: needs your hosting account or a repo secret; one-command deploy is prepared |
+| Live public deployment | **Not done**: needs your hosting account or a repository secret. The deploy workflow and its end-to-end verifier (12/12 checks against a real server) are proven locally |
 | Documentation (14 documents) | **Delivered** |
 | Measured performance report | **Delivered**, 15 measured scenarios |
 
@@ -239,8 +239,28 @@ Two supported paths, both one command once you supply the account:
 2. **Any VPS** — `docker compose up -d --build` behind `deploy/Caddyfile`
    (automatic HTTPS), or `deploy/docupro.service` + Caddy.
 
-`scripts/smoke_deploy.py http://localhost:8000` was executed against the local
-server and passed every check, so the verification path itself is proven.
+`scripts/smoke_deploy.py http://127.0.0.1:8000` was executed against the local
+production server (built client + API) and passed **12/12 checks, 0 failures**:
+
+```text
+PASS  health                       {'status': 'ok', 'version': '1.0.0'}
+PASS  security headers
+PASS  catalog                      36/37 available
+PASS  capabilities                 MuPDF, pdf2docx, rapidocr, openpyxl
+PASS  web client served            1736 bytes
+PASS  job accepted
+PASS  job succeeded
+PASS  artifact size                36824
+PASS  download                     36824 bytes
+PASS  download is not cacheable
+PASS  token required              404
+PASS  delete on request           expired
+
+0 failure(s)
+```
+
+The same script is the final step of the Deploy workflow, so the verification
+path a real deployment must pass is proven end to end.
 
 ---
 
