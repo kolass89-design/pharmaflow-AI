@@ -5,5 +5,6 @@ export default defineConfig({
   plugins: [react()],
   base: './',
   build: { outDir: 'dist', chunkSizeWarningLimit: 1200 },
-  server: { host: '127.0.0.1', port: 5173 },
+  server: { host: '127.0.0.1', port: 5173, allowedHosts: true },
+  preview: { allowedHosts: true },
 });

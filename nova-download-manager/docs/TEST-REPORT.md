@@ -48,4 +48,21 @@ Bugs found *by* these tests during development (fixed + re-tested): premature-cl
 
 ## CI results
 
-_Pending first run — this section is updated with the workflow URL, per-job status, and artifact names/sizes from the Actions API._
+**Blocked by a platform permission, not by code.** The development environment's GitHub App
+token can push code but GitHub refuses workflow-file creation without the `workflows`
+permission — both `git push` (`refusing to allow a GitHub App to create or update workflow
+.github/workflows/nova-ci.yml`) and the Contents API (`403 Resource not accessible by
+integration`) were attempted and rejected on 2026-10-19.
+
+To run the full pipeline (tests + Windows NSIS/portable + Linux + Android APK/AAB +
+extension zip) either:
+
+1. Copy `ci-examples/nova-ci.root-workflow.yml` to `.github/workflows/nova-ci.yml` in this
+   repository using your own GitHub account (web UI "Add file" works), then Actions runs
+   automatically on the development branch; or
+2. Create the standalone `nova-download-manager` repository from this folder (README has
+   commands) and push tag `v0.1.0` — `release.yml` is already wired and publishes a Release.
+
+Until one of those is done, **no Windows installer/APK artifacts exist yet**; the extension
+zip and all Node-side bundles above were produced and verified locally. Artifact names/sizes
+from the first green CI run should be appended here.
