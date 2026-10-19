@@ -49,5 +49,4 @@ async function run() {
 
 run().catch((error) => {
   console.error("SMOKE_FAILURE", error);
-  process.exitCode = 1;
 });

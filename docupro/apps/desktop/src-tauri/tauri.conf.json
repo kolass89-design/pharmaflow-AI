@@ -1,0 +1,53 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "DOCUPRO",
+  "version": "1.0.0",
+  "identifier": "com.docupro.converter",
+  "build": {
+    "beforeDevCommand": "npm --prefix ../web run dev",
+    "beforeBuildCommand": "npm --prefix ../web run build",
+    "devUrl": "http://localhost:5173",
+    "frontendDist": "../web/dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "DOCUPRO — Smart Document Converter",
+        "width": 1280,
+        "height": 860,
+        "minWidth": 900,
+        "minHeight": 620,
+        "center": true,
+        "resizable": true,
+        "fullscreen": false,
+        "dragDropEnabled": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; font-src 'self' data:; connect-src 'self' https: http://localhost:* http://127.0.0.1:*; object-src 'none'; frame-src 'self' blob:"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis", "msi", "app", "dmg", "appimage", "deb"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.ico",
+      "icons/icon.png"
+    ],
+    "copyright": "DOCUPRO",
+    "category": "Productivity",
+    "shortDescription": "Private document conversion for PDF, Word, images and spreadsheets",
+    "longDescription": "DOCUPRO converts PDF, Word, image, spreadsheet and text documents on a dedicated conversion service, with automatic deletion of uploaded files.",
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser",
+        "languages": ["English", "French"]
+      },
+      "webviewInstallMode": { "type": "downloadBootstrapper" }
+    }
+  }
+}

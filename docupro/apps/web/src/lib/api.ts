@@ -301,16 +301,13 @@ export async function fetchArtifact(url: string): Promise<{ blob: Blob; filename
   return { blob: await response.blob(), filename };
 }
 
-export async function saveArtifact(url: string, fallbackName: string): Promise<void> {
+export async function saveArtifact(
+  url: string,
+  fallbackName: string,
+): Promise<"saved" | "cancelled"> {
   const { blob, filename } = await fetchArtifact(url);
-  const objectUrl = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = objectUrl;
-  anchor.download = filename ?? fallbackName;
-  document.body.appendChild(anchor);
-  anchor.click();
-  anchor.remove();
-  setTimeout(() => URL.revokeObjectURL(objectUrl), 30_000);
+  const { saveBlob } = await import("./save");
+  return saveBlob(blob, filename ?? fallbackName);
 }
 
 export async function checkHealth(base?: string): Promise<{ ok: boolean; version?: string; message?: string }> {

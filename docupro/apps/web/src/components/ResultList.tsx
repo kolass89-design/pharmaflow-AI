@@ -81,8 +81,8 @@ export function ResultList({
   const download = async (artifact: Job["artifacts"][number]) => {
     setBusy(artifact.id);
     try {
-      await saveArtifact(artifact.url, artifact.name);
-      push(`Downloaded ${artifact.name}`, "success");
+      const result = await saveArtifact(artifact.url, artifact.name);
+      if (result === "saved") push(`Downloaded ${artifact.name}`, "success");
     } catch (error) {
       push((error as Error).message || "The download failed. The file may have expired.", "error");
     } finally {

@@ -1,0 +1,47 @@
+/** jsdom-driven end-to-end UI test against a running DOCUPRO server. */
+import { JSDOM } from "jsdom";
+import { createRequire } from "node:module";
+import { readFileSync } from "node:fs";
+
+const API = process.env.DOCUPRO_API_URL ?? "http://127.0.0.1:8000";
+const CORPUS = process.env.DOCUPRO_CORPUS ?? "/home/user/corpus";
+
+const dom = new JSDOM(`<!doctype html><html><body><div id="root"></div></body></html>`, {
+  url: API + "/",
+  pretendToBeVisual: true,
+});
+const { window } = dom;
+global.window = window;
+global.document = window.document;
+Object.defineProperty(global, "navigator", { value: window.navigator, configurable: true });
+for (const name of ["HTMLElement", "Node", "MouseEvent", "PopStateEvent", "CustomEvent", "Event", "FormData", "File", "Blob", "EventTarget"]) {
+  global[name] = window[name];
+}
+global.localStorage = window.localStorage;
+const nodeCrypto = globalThis.crypto;
+Object.defineProperty(global, "crypto", {
+  value: { randomUUID: () => nodeCrypto.randomUUID(), getRandomValues: (a) => nodeCrypto.getRandomValues(a) },
+  configurable: true,
+});
+globalThis.IS_REACT_ACT_ENVIRONMENT = false;
+window.scrollTo = () => {};
+window.matchMedia = () => ({
+  matches: false, media: "", addEventListener() {}, removeEventListener() {},
+  addListener() {}, removeListener() {}, dispatchEvent: () => false,
+});
+window.HTMLElement.prototype.scrollIntoView = () => {};
+window.URL.createObjectURL = () => "blob:mock";
+window.URL.revokeObjectURL = () => {};
+
+const realFetch = globalThis.fetch;
+global.fetch = (input, init) => {
+  const url = typeof input === "string" ? input : input.url;
+  return realFetch(url.startsWith("http") ? url : new URL(url, API).toString(), init);
+};
+window.fetch = global.fetch;
+
+window.__FIXTURE_PDF__ = new Uint8Array(readFileSync(`${CORPUS}/report-fr.pdf`));
+window.__FIXTURE_BAD__ = new Uint8Array(readFileSync(`${CORPUS}/corrupted.pdf`));
+
+const require = createRequire(import.meta.url);
+require(process.env.FLOW_BUNDLE ?? "/tmp/docupro-flow.cjs");

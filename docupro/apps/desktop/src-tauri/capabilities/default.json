@@ -1,0 +1,16 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Permissions for the DOCUPRO main window: native save dialogs and writing downloaded results.",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "dialog:default",
+    "opener:default",
+    "fs:default",
+    {
+      "identifier": "fs:allow-write-file",
+      "allow": [{ "path": "$DOWNLOAD/**" }, { "path": "$DOCUMENT/**" }, { "path": "$HOME/**" }]
+    }
+  ]
+}

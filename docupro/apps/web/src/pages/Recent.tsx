@@ -38,8 +38,8 @@ export function RecentPage() {
   const download = async (artifact: HistoryEntry["artifacts"][number]) => {
     setBusy(artifact.url);
     try {
-      await saveArtifact(artifact.url, artifact.name);
-      push(`Downloaded ${artifact.name}`, "success");
+      const result = await saveArtifact(artifact.url, artifact.name);
+      if (result === "saved") push(`Downloaded ${artifact.name}`, "success");
     } catch {
       push("This file has expired and was deleted from the server.", "error");
     } finally {
