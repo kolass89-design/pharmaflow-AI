@@ -377,5 +377,6 @@ project has **no public URL** and this report does not claim one.
 * Repo creation of the preferred private `docupro-converter` failed
   (`createRepository` not accessible to this token), so the work lives in the
   existing `kolass89-design/pharmaflow-AI` repository under `docupro/`.
-* Branch `arena/ff1487be-pharmaflow-ai` is pushed; open a pull request to `main`
-  when you are ready to merge.
+* Branch `arena/ff1487be-pharmaflow-ai` is pushed and a pull request to `main`
+  is open: <https://github.com/kolass89-design/pharmaflow-AI/pull/1>. Merge it
+  when you are ready; nothing is merged automatically.
