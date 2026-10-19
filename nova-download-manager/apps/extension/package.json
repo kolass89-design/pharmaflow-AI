@@ -1,0 +1,22 @@
+{
+  "name": "@nova/extension",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Nova Download Manager browser extension (Chromium MV3)",
+  "scripts": {
+    "build": "node build.mjs",
+    "zip": "node build.mjs --zip",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.270",
+    "adm-zip": "^0.5.15",
+    "esbuild": "^0.24.0",
+    "jsdom": "^25.0.1",
+    "typescript": "^5.6.2",
+    "vitest": "^2.1.1",
+    "@types/jsdom": "^21.1.7"
+  },
+  "license": "MIT"
+}

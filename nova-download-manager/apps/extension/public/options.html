@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Nova extension settings</title>
+<style>
+  body { margin: 0; font: 14px 'Segoe UI', system-ui, sans-serif; background: #0b1020; color: #e8ecf8; }
+  .wrap { max-width: 640px; margin: 36px auto; padding: 0 18px 40px; }
+  .card { background: #141d3a; border: 1px solid #24305c; border-radius: 14px; padding: 20px; margin-bottom: 16px; }
+  h1 { font-size: 20px; } h2 { font-size: 15px; margin-top: 0; }
+  p, li { color: #94a3c7; line-height: 1.55; }
+  label { display: block; margin: 12px 0 5px; font-weight: 600; font-size: 13px; }
+  input[type="text"], input[type="number"] { width: 100%; background: #101831; border: 1px solid #24305c; color: #e8ecf8; border-radius: 9px; padding: 9px 11px; box-sizing: border-box; }
+  .btn { border: 1px solid #24305c; background: #101831; color: #e8ecf8; border-radius: 9px; padding: 8px 14px; font-weight: 600; cursor: pointer; margin-right: 8px; }
+  .btn.primary { background: linear-gradient(135deg,#6d7cff,#22c3e6); border: 0; color: #fff; }
+  .check { display: flex; gap: 9px; align-items: flex-start; margin-top: 14px; cursor: pointer; }
+  .check input { margin-top: 3px; width: 16px; height: 16px; }
+  #msg { margin-top: 12px; color: #22c3e6; min-height: 20px; }
+  code { background: #101831; padding: 1px 6px; border-radius: 6px; border: 1px solid #24305c; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>⬇️ Nova Download Manager — extension settings</h1>
+  <div class="card">
+    <h2>Pair with the Nova desktop app</h2>
+    <p>Open Nova on this computer → <b>Browser integration</b>, copy the pairing token, and paste it here. The extension only ever talks to <code>127.0.0.1</code> (this computer).</p>
+    <label>Pairing token</label>
+    <input type="text" id="token" placeholder="paste token from Nova" autocomplete="off" />
+    <label>Bridge port</label>
+    <input type="number" id="port" min="1024" max="65535" />
+    <div style="margin-top:16px">
+      <button class="btn primary" id="save">Save</button>
+      <button class="btn" id="test">Test connection</button>
+    </div>
+    <div id="msg"></div>
+  </div>
+  <div class="card">
+    <h2>Media detection</h2>
+    <label class="check">
+      <input type="checkbox" id="autodetect" />
+      <span>
+        <b>Automatic media detection</b> (requires site access)
+        <br /><span style="color:#94a3c7">Nova quietly checks pages you open for <b>direct</b> video/audio files and shows a count on the toolbar icon. Whether anything downloads is controlled inside Nova (default: ask first). Only file URLs are looked at — page text, history and form data are never read, and candidates go only to your own Nova app. Turn off any time; the popup’s manual scan always remains available.</span>
+      </span>
+    </label>
+  </div>
+  <div class="card">
+    <h2>What Nova can and cannot download</h2>
+    <ul>
+      <li>✅ Direct files linked or embedded as plain files (.mp4, .mp3, .zip, .pdf…).</li>
+      <li>⚠️ Adaptive streams (HLS/DASH, “blob:” players) are not files — Nova will tell you instead of guessing.</li>
+      <li>🚫 DRM-protected, paywalled, or login-only media is never bypassed. Use the site’s official download/offline features.</li>
+      <li>🔒 No browsing history, cookies, or telemetry are collected — ever.</li>
+    </ul>
+  </div>
+</div>
+<script type="module" src="options.js"></script>
+</body>
+</html>
