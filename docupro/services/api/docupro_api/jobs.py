@@ -193,9 +193,7 @@ class JobManager:
             job.status = STATUS_EXPIRED
             job.artifacts = []
             job.error = {"code": "expired", "message": "The files have been deleted according to the retention policy."}
-            shutil.rmtree(job.output_dir, ignore_errors=True)
-            shutil.rmtree(job.input_dir, ignore_errors=True)
-            shutil.rmtree(job.work_dir, ignore_errors=True)
+            self._remove_job_dir(job)
         log.info("Job %s expired and was cleaned", job.id[:8])
 
     # -- submission --------------------------------------------------------
@@ -289,6 +287,7 @@ class JobManager:
                 job.status = STATUS_CANCELLED
                 job.finished_at = time.time()
                 job.expires_at = job.finished_at
+                self._remove_job_dir(job)
                 return
             job.status = STATUS_RUNNING
             job.started_at = time.time()
@@ -401,7 +400,7 @@ class JobManager:
                 job.finished_at = time.time()
                 job.progress = 0.0
                 job.expires_at = job.finished_at
-                self._remove_files(job)
+                self._remove_job_dir(job)
                 return
             job.meta = {**(job.meta or {}), "durationSeconds": elapsed}
             if job.forced_error is not None:
@@ -483,6 +482,16 @@ class JobManager:
         for sub in (job.input_dir, job.output_dir, job.work_dir):
             shutil.rmtree(sub, ignore_errors=True)
 
+    def _remove_job_dir(self, job: Job) -> None:
+        """Delete the whole job directory, not just its contents.
+
+        Called for terminal states that never need the files again. Without
+        this the per-job root directories accumulate for the lifetime of the
+        service even though they are empty.
+        """
+        self._remove_files(job)
+        shutil.rmtree(job.root, ignore_errors=True)
+
     def _fail(self, job: Job, exc: ApiError) -> None:
         with job.lock:
             self._fail_locked(job, {"code": exc.code, "message": exc.message, "details": exc.details})
@@ -493,7 +502,7 @@ class JobManager:
         job.finished_at = time.time()
         job.progress = 0.0
         job.expires_at = job.finished_at + min(600, self.settings.retention_minutes * 60)
-        self._remove_files(job)
+        self._remove_job_dir(job)
         log.info("Job %s (%s) failed: %s", job.id[:8], job.tool, error.get("code"))
 
     # -- access ------------------------------------------------------------
@@ -520,7 +529,7 @@ class JobManager:
             job.finished_at = time.time()
             job.expires_at = job.finished_at
             job.error = {"code": "cancelled", "message": "The conversion was cancelled."}
-            self._remove_files(job)
+            self._remove_job_dir(job)
         return job
 
     def delete(self, job_id: str) -> None:
@@ -529,7 +538,7 @@ class JobManager:
             job.cancel_requested = True
             self._terminate(job)
             job.deleted = True
-            self._remove_files(job)
+            self._remove_job_dir(job)
             job.artifacts = []
             job.status = STATUS_EXPIRED
             job.error = {"code": "deleted", "message": "The files were deleted at your request."}

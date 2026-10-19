@@ -107,10 +107,10 @@ $ npx tsc --noEmit             (no output — success)
 
 ```text
 $ python -m pytest -q
-98 passed, 1 warning in 14.72s
+100 passed, 1 warning in 18.67s
 
 $ python -m pytest -q --cov=docupro_api --cov-report=term
-TOTAL   3602   822   77%
+TOTAL   3604   823   77%
 ```
 
 Coverage is 77% of statements. `worker.py` shows 0% because it executes as a
@@ -322,7 +322,10 @@ Resolved during this work (previously open):
   `DOCUPRO_DELETE_AFTER_DOWNLOAD_SECONDS` (default 120, `0` disables) and is
   covered by a test;
 * the artifact download path silently fell back to "any file in the output
-  directory"; it now returns 404 for an unknown artifact ID, covered by a test.
+  directory"; it now returns 404 for an unknown artifact ID, covered by a test;
+* deleting or expiring a job left an empty per-job directory (with only
+  `manifest.json`) behind for the lifetime of the service; terminal states now
+  remove the whole job directory, covered by two tests.
 
 ---
 

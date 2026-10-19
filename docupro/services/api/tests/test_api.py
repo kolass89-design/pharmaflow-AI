@@ -335,3 +335,28 @@ def test_artifact_layout_uses_opaque_names(client, corpus):
     stored = sorted(p.name for p in (manager.get(job["id"]).output_dir).iterdir())
     assert stored == ["artifact-a1"]
     assert manager.get(job["id"]).inputs[0]["name"] == "report-fr.pdf"
+
+
+def test_delete_removes_the_whole_job_directory(client, corpus):
+    """Deleting a job must not leave an empty directory behind on disk."""
+    job = submit(client, "pdf-to-text", [corpus / "report-fr.pdf"]).json()
+    wait_for_job(client, job["id"])
+    manager = __import__("docupro_api.main", fromlist=["app"]).app.state.manager
+    root = manager.get(job["id"]).root
+    assert root.exists()
+    assert client.delete(f"/api/jobs/{job['id']}").status_code == 204
+    assert not root.exists(), "job directory should be removed entirely"
+
+
+def test_expiry_removes_the_whole_job_directory(client, corpus):
+    import time
+
+    job = submit(client, "pdf-to-text", [corpus / "report-fr.pdf"]).json()
+    wait_for_job(client, job["id"])
+    manager = client.app.state.manager
+    managed = manager.get(job["id"])
+    root = managed.root
+    with managed.lock:
+        managed.expires_at = time.time() - 1
+    manager.sweep()
+    assert not root.exists(), "expired job directory should be removed entirely"

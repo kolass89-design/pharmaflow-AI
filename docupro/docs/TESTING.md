@@ -40,13 +40,13 @@ pytest -q
 pytest -q --cov=docupro_api --cov-report=term-missing
 ```
 
-What is covered (94 tests):
+What is covered (100 tests):
 
 | File | Focus |
 | --- | --- |
 | `tests/test_security.py` | filename sanitiser (traversal, control characters, Unicode), signature detection, content-disposition, rate limiter |
 | `tests/test_engines.py` | page-range parsing, ligature normalisation, image handling, DOCX renderer, PDF validation, encryption, OCR fallbacks |
-| `tests/test_api.py` | catalog shape, security headers, full job lifecycle over HTTP, token enforcement, spoofed and corrupted uploads, wrong passwords, ordering, cancellation, deletion, expiry sweep, rate limiting, four concurrent jobs |
+| `tests/test_api.py` | catalog shape, security headers, full job lifecycle over HTTP, token enforcement, spoofed and corrupted uploads, wrong passwords, ordering, cancellation, deletion, expiry sweep, rate limiting, four concurrent jobs, full job-directory removal |
 
 Tests that need an engine absent on the machine are skipped with a reason, not
 silently passed.

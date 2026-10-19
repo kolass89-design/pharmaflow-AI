@@ -66,7 +66,7 @@ For development with hot reload, run `make api` and `make web` in two terminals
 
 | Area | Status |
 | --- | --- |
-| Backend tests | 98 passed (`pytest`), 77% statement coverage |
+| Backend tests | 100 passed (`pytest`), 77% statement coverage |
 | Lint / formatting | `ruff check` and `ruff format --check` clean |
 | Conversion matrix | 36 of 37 verified end to end; `powerpoint-to-pdf` requires LibreOffice, which the build sandbox does not have |
 | Web client | TypeScript clean; production build 89.4 kB gzipped JS + 8.3 kB CSS; jsdom smoke test and a full upload → convert → download flow pass against the live API |
